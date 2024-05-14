@@ -111,7 +111,7 @@ npm install
 ```
 
 2. Configure BACKEND URL:
-- Ensure all backend API calls within the frontend code are set to use the backend URL `http://127.0.0.1:8787/`. Just replace `https://backend.anees-azc.workers.dev` with `http://127.0.0.1:8787/` and you should be fine
+- Go to config.ts file at the root of the frontend folder and replace `https://backend.anees-azc.workers.dev` with `http://127.0.0.1:8787/` and you should be fine.
 3. Run the Frontend:
 ```bash
 npm run dev
