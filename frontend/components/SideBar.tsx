@@ -5,51 +5,60 @@ import { usePathname } from 'next/navigation'
 import React, { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
+type ChannelCounts = {
+  introduction: number;
+  announcements: number;
+  success: number;
+  career: number;
+};
+
 const SideBar = () => {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
-  const [channelCounts, setChannelCounts] = useState({
-    introduction: 0,
-    announcements: 0,
-    success: 0,
-    career: 0,
-  });
 
-  const handleLogout = () => {
+const [channelCounts, setChannelCounts] = useState<ChannelCounts>({
+  introduction: 0,
+  announcements: 0,
+  success: 0,
+  career: 0,
+});
 
-    if (localStorage.getItem('userId')) {
-      localStorage.removeItem('userId'); // Remove userId from localStorage
-      toast.success("Logged out successfully!")
+useEffect(() => {
+  // Function to fetch the latest counts
+  const fetchChannelCounts = async () => {
+    try {
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        console.error('No user ID found, user must be logged in to fetch channel counts');
+        return;
+      }
+      const response = await axios.get('https://backend.anees-azc.workers.dev/api/v1/counts', {
+        params: {
+          userId: userId
+        }
+      });
+      setChannelCounts(response.data);
+    } catch (error) {
+      console.error('Failed to fetch channel counts:', error);
     }
   };
 
-  useEffect(() => {
-    // Function to fetch the latest counts
-    const fetchChannelCounts = async () => {
-      try {
-        const userId = localStorage.getItem('userId');
-        if (!userId) {
-          console.error('No user ID found, user must be logged in to fetch channel counts');
-          return;
-        }
-        const response = await axios.get('https://backend.anees-azc.workers.dev/api/v1/counts', {
-          params: {
-            userId: userId
-          }
-        });
-        setChannelCounts(response.data);
-      } catch (error) {
-        console.error('Failed to fetch channel counts:', error);
-      }
-    };
+  // Fetch counts initially and set up polling
+  fetchChannelCounts();
+  const intervalId = setInterval(fetchChannelCounts, 10000); // Poll every 10 seconds
 
-    // Fetch counts initially and set up polling
-    fetchChannelCounts();
-    const intervalId = setInterval(fetchChannelCounts, 10000); // Poll every 10 seconds
+  return () => clearInterval(intervalId); 
+}, []);
 
-    return () => clearInterval(intervalId); 
-  }, []);
+
+
+  const handleLogout = () => {
+    if (localStorage.getItem('userId')) {
+      localStorage.removeItem('userId'); // Remove userId from localStorage
+      toast.success("Logged out successfully!");
+    }
+  };
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
